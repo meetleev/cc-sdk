@@ -5,7 +5,7 @@
   "main": "bin/ccx.js",
   "scripts": {},
   "keywords": [
-    "ccx common"
+    "cocos"
   ],
   "sdkName": "ccx",
   "author": "Lee",
