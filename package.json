@@ -28,6 +28,6 @@
     "rollup-plugin-terser": "^7.0.2",
     "tslib": "^2.3.1",
     "typescript": "^4.5.5",
-    "gen-dts": "file:./gen-dts-1.0.0.tgz"
+    "gen-dts": "git+https://github.com/GLeeWei/gen-dts.git"
   }
 }
