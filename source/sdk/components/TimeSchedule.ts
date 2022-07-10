@@ -1,5 +1,4 @@
-import {Component} from "cc";
-
+import Component = cc.Component
 export interface IUpdateEnd {
     duration: number;
     onEnd: Function;

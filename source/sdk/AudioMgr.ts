@@ -1,4 +1,3 @@
-import {Node, AudioSource, AudioClip, director, sys, Director, AudioSourceComponent} from 'cc';
 import {TimeSchedule} from "./components";
 import {resMgr} from "./ResMgr";
 
@@ -13,10 +12,10 @@ enum AudioType {
 
 export class AudioMgr {
     private static instance?: AudioMgr;
-    private commonAudioSources: AudioSource[] = [];
+    private commonAudioSources: cc.AudioSource[] = [];
 
-    private musicAudioSourceMap: Map<string, AudioSource> = new Map<string, AudioSource>();
-    private readonly bgAudioSource: AudioSource;
+    private musicAudioSourceMap: Map<string, cc.AudioSource> = new Map<string, cc.AudioSource>();
+    private readonly bgAudioSource: cc.AudioSource;
     private maxCommonAudioNums = 10;
     private _musicEnabled: boolean = false;
 
@@ -32,7 +31,7 @@ export class AudioMgr {
             } else {
                 this.pauseAllMusic();
             }
-            sys.localStorage.setItem(MusicEnabled, this._musicEnabled ? '1' : '0');
+            cc.sys.localStorage.setItem(MusicEnabled, this._musicEnabled ? '1' : '0');
         }
     }
 
@@ -45,7 +44,7 @@ export class AudioMgr {
     set effectEnabled(value: boolean) {
         if (this._effectEnabled != value) {
             this._effectEnabled = value;
-            sys.localStorage.setItem(EffectEnabled, this._effectEnabled ? '1' : '0');
+            cc.sys.localStorage.setItem(EffectEnabled, this._effectEnabled ? '1' : '0');
         }
     }
 
@@ -62,7 +61,7 @@ export class AudioMgr {
         }
     }
 
-    private readonly _audioNodeRoot: Node;
+    private readonly _audioNodeRoot: cc.Node;
 
     private _timeSchedule: TimeSchedule;
 
@@ -73,12 +72,12 @@ export class AudioMgr {
     }
 
     private constructor() {
-        director.on(Director.EVENT_BEFORE_SCENE_LAUNCH, () => {
+        cc.director.on(cc.Director.EVENT_BEFORE_SCENE_LAUNCH, () => {
             delete AudioMgr.instance;
             AudioMgr.instance = undefined;
         });
-        this._audioNodeRoot = new Node('audio');
-        director.getScene()?.addChild(this._audioNodeRoot);
+        this._audioNodeRoot = new cc.Node('audio');
+        cc.director.getScene()?.addChild(this._audioNodeRoot);
 
         this._timeSchedule = this._audioNodeRoot.addComponent(TimeSchedule);
 
@@ -88,37 +87,37 @@ export class AudioMgr {
 
         this.bgAudioSource = this.createAudio(true);
 
-        let enabled = sys.localStorage.getItem(MusicEnabled);
+        let enabled = cc.sys.localStorage.getItem(MusicEnabled);
         this._musicEnabled = '0' != enabled;
-        enabled = sys.localStorage.getItem(EffectEnabled);
+        enabled = cc.sys.localStorage.getItem(EffectEnabled);
         this._effectEnabled = '0' != enabled;
     }
 
-    playBGMusic(audioClip: string | AudioClip, loop: boolean = true, volume: number = 1) {
-        if (audioClip instanceof AudioClip) {
+    playBGMusic(audioClip: string | cc.AudioClip, loop: boolean = true, volume: number = 1) {
+        if (audioClip instanceof cc.AudioClip) {
             this.play(AudioType.BGMusic, audioClip, volume, loop);
         } else {
-            AudioMgr.loadAudio(audioClip).then((clip: AudioClip) => {
+            AudioMgr.loadAudio(audioClip).then((clip: cc.AudioClip) => {
                 this.play(AudioType.BGMusic, clip, volume, loop);
             });
         }
     }
 
-    playMusic(audioClip: string | AudioClip, loop: boolean = true, volume: number = 1) {
-        if (audioClip instanceof AudioClip) {
+    playMusic(audioClip: string | cc.AudioClip, loop: boolean = true, volume: number = 1) {
+        if (audioClip instanceof cc.AudioClip) {
             this.play(AudioType.Music, audioClip, volume, loop);
         } else {
-            AudioMgr.loadAudio(audioClip).then((clip: AudioClip) => {
+            AudioMgr.loadAudio(audioClip).then((clip: cc.AudioClip) => {
                 this.play(AudioType.Music, clip, volume, loop);
             });
         }
     }
 
-    playEffect(audioClip: string | AudioClip, volume: number = 1) {
-        if (audioClip instanceof AudioClip) {
+    playEffect(audioClip: string | cc.AudioClip, volume: number = 1) {
+        if (audioClip instanceof cc.AudioClip) {
             this.play(AudioType.Effect, audioClip, volume);
         } else {
-            AudioMgr.loadAudio(audioClip).then((clip: AudioClip) => {
+            AudioMgr.loadAudio(audioClip).then((clip: cc.AudioClip) => {
                 this.play(AudioType.Effect, clip, volume);
             });
         }
@@ -131,13 +130,13 @@ export class AudioMgr {
     }
 
     pauseMusic(audioClip: string, bFadeOut?: boolean) {
-        let audio: AudioSource;
+        let audio: cc.AudioSource;
         if (this.bgAudioSource) {
             if (this.bgAudioSource.clip?.name == audioClip) {
                 audio = this.bgAudioSource;
             }
         }
-        audio = this.musicAudioSourceMap.get(audioClip) as AudioSource;
+        audio = this.musicAudioSourceMap.get(audioClip) as cc.AudioSource;
         if (audio) {
             if (bFadeOut) {
                 let orgVolume = audio.volume;
@@ -191,7 +190,7 @@ export class AudioMgr {
         this.musicAudioSourceMap.clear();
     }
 
-    private play(audioType: AudioType, pAudioClip: AudioClip, volume: number, loop?: boolean) {
+    private play(audioType: AudioType, pAudioClip: cc.AudioClip, volume: number, loop?: boolean) {
         switch (audioType) {
             case AudioType.BGMusic: {
                 if (!this.adPlaying && this._musicEnabled) {
@@ -199,7 +198,7 @@ export class AudioMgr {
                     this.bgAudioSource.clip = pAudioClip;
                     loop && (this.bgAudioSource.loop = loop);
                     this.bgAudioSource.volume = volume;
-                    this.bgAudioSource.playOnAwake = true;
+                    this.bgAudioSource.playOnLoad = true;
                     this.bgAudioSource.play();
                 } else {
                     this.bgAudioSource.clip = pAudioClip;
@@ -208,15 +207,15 @@ export class AudioMgr {
                 break;
             }
             case AudioType.Music: {
-                let musicAudioSource: AudioSource;
+                let musicAudioSource: cc.AudioSource;
                 if (!this.musicAudioSourceMap.has(pAudioClip.name)) {
                     musicAudioSource = this.createAudio(loop);
                     musicAudioSource.clip = pAudioClip;
                     this.musicAudioSourceMap.set(pAudioClip.name, musicAudioSource);
-                } else musicAudioSource = this.musicAudioSourceMap.get(pAudioClip.name) as AudioSource;
+                } else musicAudioSource = this.musicAudioSourceMap.get(pAudioClip.name) as cc.AudioSource;
                 if (!this.adPlaying && this._musicEnabled) {
                     musicAudioSource.volume = volume;
-                    musicAudioSource.playOnAwake = true;
+                    musicAudioSource.playOnLoad = true;
                     musicAudioSource.play();
                 } else musicAudioSource?.stop();
                 break;
@@ -224,8 +223,9 @@ export class AudioMgr {
             case AudioType.Effect: {
                 if (!this.adPlaying && this._effectEnabled) {
                     let effectAudioSource = this.getFreeCommonAudioSource();
+                    effectAudioSource.clip = pAudioClip;
                     effectAudioSource.volume = volume;
-                    effectAudioSource.playOneShot(pAudioClip);
+                    effectAudioSource.play();
                 }
                 break;
             }
@@ -235,7 +235,7 @@ export class AudioMgr {
     private getFreeCommonAudioSource() {
         for (let i = 0, len = this.commonAudioSources.length; i < len; i++) {
             let audioSource = this.commonAudioSources[i];
-            if (!audioSource.playing)
+            if (!audioSource.isPlaying)
                 return audioSource;
         }
         let audioSource = this.createAudio();
@@ -244,10 +244,10 @@ export class AudioMgr {
     }
 
     private createAudio(loop?: boolean) {
-        let audioSource = this._audioNodeRoot.addComponent(AudioSourceComponent);
+        let audioSource = this._audioNodeRoot.addComponent(cc.AudioSource);
         loop && (audioSource.loop = loop);
         audioSource.volume = 1;
-        audioSource.playOnAwake = false;
+        audioSource.playOnLoad = false;
         return audioSource;
     }
 
