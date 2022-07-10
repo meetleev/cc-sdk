@@ -1,13 +1,9 @@
-import {instantiate, Node, NodePool, log, Prefab} from 'cc';
-
-/*class PoolObject {
-
-}*/
+import {Log} from "../Log";
 
 export type ObjectType = number;
 
 export class ObjectPoolsMgr {
-    private _nodePoolMap: Map<ObjectType, NodePool> = new Map<ObjectType, NodePool>();
+    private _nodePoolMap: Map<ObjectType, cc.NodePool> = new Map<ObjectType, cc.NodePool>();
     private static instance: ObjectPoolsMgr;
 
     static get Instance() {
@@ -25,8 +21,8 @@ export class ObjectPoolsMgr {
             if (nodePool) {
                 let node = nodePool.get();
                 if (0 == nodePool.size()) {
-                    log('pool get out', objectType);
-                    node && nodePool.put(instantiate(node));
+                    Log.l('pool get out', objectType);
+                    node && nodePool.put(cc.instantiate(node));
                 }
                 return node;
             }
@@ -35,18 +31,18 @@ export class ObjectPoolsMgr {
         return null;
     }
 
-    initObjectToPool(objectType: ObjectType, obj: Node | Prefab, count: number) {
+    initObjectToPool(objectType: ObjectType, obj: cc.Node | cc.Prefab, count: number) {
         for (let i = 0; i < count; i++)
-            this.putObjectToPool(objectType, instantiate(obj) as Node);
+            this.putObjectToPool(objectType, cc.instantiate(obj) as cc.Node);
     }
 
-    putObjectToPool(objectType: ObjectType, obj: Node) {
-        let nodePool: NodePool;
+    putObjectToPool(objectType: ObjectType, obj: cc.Node) {
+        let nodePool: cc.NodePool;
         if (!this._nodePoolMap.has(objectType)) {
-            nodePool = new NodePool();
+            nodePool = new cc.NodePool();
             this._nodePoolMap.set(objectType, nodePool);
         } else {
-            nodePool = this._nodePoolMap.get(objectType) as NodePool;
+            nodePool = this._nodePoolMap.get(objectType) as cc.NodePool;
         }
         obj && nodePool?.put(obj);
     }
