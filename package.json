@@ -7,6 +7,10 @@
   "keywords": [
     "cocos"
   ],
+    "repository": {
+    "type": "git",
+    "url": "https://github.com/GLeeWei/cc-sdk.git"
+  },
   "sdkName": "ccx",
   "author": "Lee",
   "license": "ISC",
