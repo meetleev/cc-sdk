@@ -7,7 +7,7 @@
   "keywords": [
     "cocos"
   ],
-    "repository": {
+  "repository": {
     "type": "git",
     "url": "https://github.com/GLeeWei/cc-sdk.git"
   },
