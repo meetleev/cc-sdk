@@ -1,20 +1,41 @@
-const gulp = require('gulp');
-const Concat = require('gulp-concat');
-const Babel = require("gulp-babel");
-const Wrap = require('gulp-wrap');
-const Replace = require('gulp-replace');
-const Del = require('del');
-const fs = require('fs-extra');
-const ps = require('path');
-const realFs = require('fs');
-const rollup = require("rollup");
-const commonjs = require('@rollup/plugin-commonjs');
-const rpBabel = require('@rollup/plugin-babel');
-const babel_preset_env = require('@babel/preset-env');
-const babel_preset_typescript = require('@babel/preset-typescript');
-const {nodeResolve} = require('@rollup/plugin-node-resolve');
-const babel_plugin_transform_for_of = require('@babel/plugin-transform-for-of');
-const rollup_plugin_terser = require("rollup-plugin-terser");
+import gulp from "gulp";
+import {deleteAsync} from 'del';
+import Concat from "gulp-concat";
+
+import Babel from "gulp-babel";
+
+import Wrap from "gulp-wrap";
+
+import Replace from "gulp-replace";
+
+import fs from "fs-extra";
+
+import {dirname, resolve, join} from 'path';
+
+import realFs from "fs";
+
+import {rollup} from "rollup";
+
+import commonjs from "@rollup/plugin-commonjs";
+
+import {babel} from "@rollup/plugin-babel";
+
+import babel_preset_env from "@babel/preset-env";
+
+import babel_preset_typescript from "@babel/preset-typescript";
+
+import {nodeResolve} from "@rollup/plugin-node-resolve";
+
+import babel_plugin_transform_for_of from "@babel/plugin-transform-for-of";
+
+import rollup_plugin_terser from "@rollup/plugin-terser";
+
+import {generate} from 'gen-dts';
+
+import {fileURLToPath} from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const json = JSON.parse(fs.readFileSync('./package.json'));
 const SDK_NAME = json.sdkName;
@@ -59,8 +80,8 @@ function buildSDKConfigDependencies() {
         .pipe(gulp.dest('bin/'))
 }
 
-async function buildSDKScripts() {
-    const engineRoot = ps.resolve(__dirname);
+async function buildSDKScriptsTask() {
+    const engineRoot = resolve(__dirname);
     const realpath = typeof realFs.realpath.native === 'function' ? realFs.realpath.native : realFs.realpath;
     const realPath = (file) => new Promise((resolve, reject) => {
         realpath(file, (err, path) => {
@@ -71,7 +92,7 @@ async function buildSDKScripts() {
             }
         });
     });
-    const bundle = await rollup.rollup({
+    const bundle = await rollup({
         input: './source/index.ts',
         external: ['cc'],
         plugins: [
@@ -82,7 +103,7 @@ async function buildSDKScripts() {
                 modulesOnly: true,
             }),
             commonjs({/*extensions: ['.ts'], exclude: ["source/!**!/!*.js"]*/}),
-            rpBabel.babel({
+            babel({
                 extensions: ['.ts', '.js'],
                 babelHelpers: 'bundled',
                 comments: false,
@@ -95,7 +116,7 @@ async function buildSDKScripts() {
                     [babel_preset_env.default, {loose: true,}],
                     [babel_preset_typescript]/*['@cocos/babel-preset-cc']*/]
             }),
-            rollup_plugin_terser.terser({
+            rollup_plugin_terser({
                 compress: {
                     reduce_funcs: false,
                     keep_fargs: false,
@@ -127,16 +148,16 @@ async function buildSDKScripts() {
     // console.log('rp', rollupOutput)
 }
 
-function clean() {
-    return Del(['./bin/*']);
+async function cleanTask() {
+    await deleteAsync(['./bin/*']);
 }
 
-exports.clean = gulp.series(clean);
+export const clean = gulp.series(cleanTask);
 
-async function buildDTS() {
-    const outDir = ps.join('bin'/*, '.declarations'*/);
+async function buildDTSTask() {
+    const outDir = join('bin'/*, '.declarations'*/);
     await fs.emptyDir(outDir);
-    return require('gen-dts').generate({
+    return generate({
         rootDir: __dirname,
         outDir: outDir,
         rootModuleName: SDK_NAME,
@@ -144,6 +165,10 @@ async function buildDTS() {
     });
 }
 
-exports.buildDTS = gulp.series(buildDTS);
-exports.buildSDKSrcs = gulp.series(buildSDKScripts);
-exports.default = exports.build = gulp.series(clean, /*buildSDKCryptoDependencies, buildSDKConfigDependencies,*/ buildDTS, buildSDKScripts);
+export const buildDTS = gulp.series(buildDTSTask);
+
+export const buildSDKScripts = gulp.series(buildSDKScriptsTask);
+
+export const build = gulp.series(cleanTask, /*buildSDKCryptoDependencies, buildSDKConfigDependencies,*/ buildDTSTask, buildSDKScriptsTask);
+
+export default build;
