@@ -8,10 +8,10 @@ export type ObjectType = number;
 
 export class ObjectPoolsMgr {
     private _nodePoolMap: Map<ObjectType, NodePool> = new Map<ObjectType, NodePool>();
-    private static instance: ObjectPoolsMgr;
+    private static instance?: ObjectPoolsMgr;
 
     static get Instance() {
-        if (null == ObjectPoolsMgr.instance)
+        if (undefined == ObjectPoolsMgr.instance)
             ObjectPoolsMgr.instance = new ObjectPoolsMgr();
         return ObjectPoolsMgr.instance;
     }

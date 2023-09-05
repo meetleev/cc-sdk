@@ -1,4 +1,4 @@
-import {Canvas, Director, director, instantiate, Node, Prefab, Size, UITransform, view} from "cc";
+import {Canvas, Director, director, instantiate, Node, Prefab, Size, UITransformComponent, view} from "cc";
 import {resMgr} from "./ResMgr";
 
 export type UIType = number;
@@ -6,10 +6,10 @@ export type UIType = number;
 export class UIMgr {
     private uiTypeNodeMap: Map<UIType, Node> = new Map<UIType, Node>();
     private uiTypes: Set<UIType> = new Set<UIType>();
-    private static instance: UIMgr;
+    private static instance?: UIMgr;
 
     static get Instance() {
-        if (null == UIMgr.instance)
+        if (undefined == UIMgr.instance)
             UIMgr.instance = new UIMgr();
         return UIMgr.instance;
     }
@@ -17,7 +17,7 @@ export class UIMgr {
     private constructor() {
         director.on(Director.EVENT_BEFORE_SCENE_LAUNCH, () => {
             this.uiRoot = undefined;
-            this.canvas = undefined;
+            this._canvas = undefined;
             this.uiTypes.clear();
             this.uiTypeNodeMap.clear();
         });
@@ -25,18 +25,18 @@ export class UIMgr {
 
     uiRoot?: Node;
 
+    private _canvas?: Node;
 
-    canvas?: Node;
-
-    getCanvas() {
+    get canvas() {
+        if (undefined != this._canvas) return this._canvas;
         let scene = director.getScene();
         if (scene) {
             let children = scene.children;
             for (let i = 0, len = children.length; i < len; i++) {
-                let child = children[i];
+                let child: Node = children[i] as Node;
                 let canvas = child.getComponent(Canvas);
                 if (canvas) {
-                    this.canvas = canvas.node;
+                    this._canvas = canvas.node;
                     return child;
                 }
             }
@@ -55,12 +55,13 @@ export class UIMgr {
     private createUI(uiType: UIType, uiResFilePath: string): Promise<Node> {
         return new Promise((resolve, reject) => {
             resMgr.loadPrefab(`ui/${uiResFilePath}`).then((prefab: Prefab) => {
-                let pNode = instantiate(prefab);
-                let parent = null != this.uiRoot ? this.uiRoot : this.getCanvas();
-                (null != parent ? parent : director.getScene())?.addChild(pNode);
-                if (null == pNode._uiProps.uiTransformComp)
-                    pNode._uiProps.uiTransformComp = pNode.addComponent(UITransform);
-                pNode._uiProps.uiTransformComp.contentSize = view.getVisibleSize();
+                let pNode: Node = instantiate(prefab);
+                let parent = undefined != this.uiRoot ? this.uiRoot : this.canvas;
+                parent!.addChild(pNode);
+                let ut = pNode.getComponent(UITransformComponent)
+                if (null == ut)
+                    ut = pNode.addComponent(UITransformComponent);
+                ut.contentSize = view.getVisibleSize();
                 this.uiTypeNodeMap.set(uiType, pNode);
                 resolve(pNode);
 

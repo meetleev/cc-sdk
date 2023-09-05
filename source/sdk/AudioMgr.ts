@@ -1,5 +1,4 @@
-import {Node, AudioSource, AudioClip, director, sys, Director, AudioSourceComponent} from 'cc';
-import {TimeSchedule} from "./components";
+import {Node, AudioSource, AudioClip, director, sys, Director, AudioSourceComponent, Canvas} from 'cc';
 import {resMgr} from "./ResMgr";
 
 const MusicEnabled: string = 'ccx@MusicEnabled';
@@ -11,8 +10,23 @@ enum AudioType {
     Effect
 }
 
+function GetCanvas(): Node | null {
+    let scene = director.getScene();
+    if (scene) {
+        let children = scene.children;
+        for (let i = 0, len = children.length; i < len; i++) {
+            let child: Node = children[i] as Node;
+            let canvas = child.getComponent(Canvas);
+            if (canvas) {
+                return child;
+            }
+        }
+    }
+    return null;
+}
+
 export class AudioMgr {
-    private static instance?: AudioMgr;
+    private static _instance?: AudioMgr;
     private commonAudioSources: AudioSource[] = [];
 
     private musicAudioSourceMap: Map<string, AudioSource> = new Map<string, AudioSource>();
@@ -64,23 +78,23 @@ export class AudioMgr {
 
     private readonly _audioNodeRoot: Node;
 
-    private _timeSchedule: TimeSchedule;
+    // private _timeSchedule: TimeSchedule;
 
     static get Instance() {
-        if (null == AudioMgr.instance)
-            AudioMgr.instance = new AudioMgr();
-        return AudioMgr.instance;
+        if (undefined == AudioMgr._instance)
+            AudioMgr._instance = new AudioMgr();
+        return AudioMgr._instance;
     }
 
     private constructor() {
         director.on(Director.EVENT_BEFORE_SCENE_LAUNCH, () => {
-            delete AudioMgr.instance;
-            AudioMgr.instance = undefined;
+            delete AudioMgr._instance;
+            AudioMgr._instance = undefined;
         });
         this._audioNodeRoot = new Node('audio');
-        director.getScene()?.addChild(this._audioNodeRoot);
+        GetCanvas()!.addChild(this._audioNodeRoot);
 
-        this._timeSchedule = this._audioNodeRoot.addComponent(TimeSchedule);
+        // this._timeSchedule = this._audioNodeRoot.addComponent(TimeSchedule);
 
         for (let i = 0; i < this.maxCommonAudioNums; i++) {
             this.commonAudioSources.push(this.createAudio());
@@ -130,7 +144,7 @@ export class AudioMgr {
         audioSources.forEach((o) => o.stop());
     }
 
-    pauseMusic(audioClip: string, bFadeOut?: boolean) {
+    pauseMusic(audioClip: string/*, bFadeOut?: boolean*/) {
         let audio: AudioSource;
         if (this.bgAudioSource) {
             if (this.bgAudioSource.clip?.name == audioClip) {
@@ -139,9 +153,9 @@ export class AudioMgr {
         }
         audio = this.musicAudioSourceMap.get(audioClip) as AudioSource;
         if (audio) {
-            if (bFadeOut) {
+            /*if (bFadeOut) {
                 let orgVolume = audio.volume;
-                this._timeSchedule.schedule(
+                this._timeSchedule.timeSchedule(
                     (dt: number) => {
                         audio.volume -= dt;
                         if (audio.volume <= 0.1) {
@@ -152,7 +166,8 @@ export class AudioMgr {
                         return false;
                     }
                 );
-            } else audio.stop();
+            } else*/
+                audio.stop();
         }
     }
 
