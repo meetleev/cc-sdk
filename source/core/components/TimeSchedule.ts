@@ -1,12 +1,11 @@
-import {Component} from "cc";
-
+import {CComponent} from "./CComponent";
 
 export interface IUpdateEnd {
     duration: number;
     onEnd: Function;
 }
 
-export class TimeSchedule extends Component {
+export class TimeSchedule extends CComponent {
     private _onUpdateEndList: Array<IUpdateEnd> = [];
     private _onUpdateList: Array<Function> = [];
 
@@ -17,7 +16,7 @@ export class TimeSchedule extends Component {
             this._onUpdateEndList.push(o);
     }
 
-    update(dt: number) {
+    protected update(dt: number) {
         let onUpdateEndList = this._onUpdateEndList;
         for (let i = 0, len = onUpdateEndList.length; i < len;) {
             let o = onUpdateEndList[i];

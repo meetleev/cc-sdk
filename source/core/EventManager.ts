@@ -59,12 +59,12 @@ export class EventManager {
      * @api public
      */
 
-    /*once(target: object, fn: Function, event: string) {
+    once(target: object, fn: Function, event: string) {
         this.on(target, () => {
             this.off(target, event);
-            fn.apply(this, arguments);
+            fn(arguments);
         }, event);
-    }*/
+    }
 
     /**
      * Check if this emitter has `event` handlers.

@@ -1,5 +1,5 @@
-import {game, instantiate, Layers, Mat4, Node, sp, Texture2D, Tween, tween, env, Vec3} from "cc";
-import {JSB} from "cc/env";
+import {game, instantiate, Layers, Mat4, Node, sp, Texture2D, Tween, tween, Vec3} from "cc";
+import {native} from './cc-env';
 import {resMgr} from "./ResMgr";
 
 export interface SpineActParam {
@@ -331,7 +331,7 @@ export function QuickSort<T>(arr: Array<T>, compareFn: (a: T, b: T) => number) {
 
 // @ts-ignore
 export function ReplaceSpineRegion(spineComp: sp.Skeleton, soltName: string, texture: Texture2D) {
-    if (JSB) {
+    if (native) {
         // @ts-ignore
         let textureIdx = spineComp.skeletonData.recordTexture(texture);
         // @ts-ignore
@@ -376,7 +376,10 @@ export function ReplaceSpineRegion(spineComp: sp.Skeleton, soltName: string, tex
     }
 }
 
-export function ShakeEffect(node: Node, duration: number, scale: number = 1) {
+export function ShakeEffect(node: Node, properties: { duration?: number, scale?: number }) {
+    let {duration, scale} = properties;
+    if (undefined == duration) duration = 0;
+    if (undefined == scale) scale = 1;
     Tween.stopAllByTarget(node);
     let orgPosition = node.position.clone();
     tween(node)
@@ -389,11 +392,11 @@ export function ShakeEffect(node: Node, duration: number, scale: number = 1) {
         .to(0.02, {position: orgPosition.clone().add3f(-8 * scale, -10 * scale, 0)})
         .to(0.02, {position: orgPosition.clone().add3f(3 * scale, 10 * scale, 0)})
         .to(0.02, {position: orgPosition}).union().repeatForever().start();
-
-    setTimeout(() => {
-        Tween.stopAllByTarget(node);
-        node.position = orgPosition;
-    }, duration * 1000);
+    if (0 < duration)
+        setTimeout(() => {
+            Tween.stopAllByTarget(node);
+            node.position = orgPosition;
+        }, duration * 1000);
 }
 
 const _mat4_temp = new Mat4();

@@ -1,6 +1,6 @@
 {
   "name": "cc-sdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "cocos extension lib common",
   "main": "bin/ccx.js",
   "scripts": {},
@@ -25,13 +25,13 @@
     "@rollup/plugin-terser": "^0.4.3",
     "del": "^7.1.0",
     "fs-extra": "^11.1.1",
-    "gen-dts": "git+https://github.com/meetleev/gen-dts.git",
+    "gen-dts": "github:meetleev/gen-dts#18cb49cd90b3323914ebb6b90c03ef60654784bc",
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-concat": "^2.6.1",
     "gulp-replace": "^1.1.4",
     "gulp-wrap": "^0.15.0",
-    "rollup": "^3.28.1",
+    "rollup": "^3.29.0",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2"
   }

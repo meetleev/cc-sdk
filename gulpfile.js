@@ -8,8 +8,9 @@ import Wrap from "gulp-wrap";
 
 import Replace from "gulp-replace";
 
-import fs from "fs-extra";
+import fs_extra from "fs-extra";
 
+const {emptyDir, readJsonSync} = fs_extra;
 import {dirname, resolve, join} from 'path';
 
 import realFs from "fs";
@@ -26,8 +27,6 @@ import babel_preset_typescript from "@babel/preset-typescript";
 
 import {nodeResolve} from "@rollup/plugin-node-resolve";
 
-import babel_plugin_transform_for_of from "@babel/plugin-transform-for-of";
-
 import rollup_plugin_terser from "@rollup/plugin-terser";
 
 import {generate} from 'gen-dts';
@@ -36,9 +35,11 @@ import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+// cjs esm iife
+const buildFormat = 'iife'
 
-const json = JSON.parse(fs.readFileSync('./package.json'));
-const SDK_NAME = json.sdkName;
+const json = readJsonSync('./package.json');
+const SDK_NAME = json['sdkName'];
 let dependenciesFiles = [
     'source/crypto-js/crypto-js-min.js',
 ];
@@ -92,8 +93,9 @@ async function buildSDKScriptsTask() {
             }
         });
     });
+    let sources = ['./source/index.ts'];
     const bundle = await rollup({
-        input: './source/index.ts',
+        input: sources,
         external: ['cc'],
         plugins: [
             nodeResolve({
@@ -109,9 +111,7 @@ async function buildSDKScriptsTask() {
                 comments: false,
                 // exclude: ['node_modules/!**'],
                 // include: [/*"exports/!**!/!*.ts"*/],
-                plugins: [
-                    [babel_plugin_transform_for_of.default, {assumeArray: true}],
-                ],
+                plugins: [],
                 presets: [
                     [babel_preset_env.default, {loose: true,}],
                     [babel_preset_typescript]/*['@cocos/babel-preset-cc']*/]
@@ -126,7 +126,7 @@ async function buildSDKScriptsTask() {
                     passes: 2, // first: remove deadcodes and const objects, second: drop variables
                 },
                 mangle: {
-                    eval: true, toplevel: false, properties: {regex: /^_/},
+                    eval: true, toplevel: false,
                 },
                 keep_fnames: false,
                 /*output: {
@@ -136,15 +136,16 @@ async function buildSDKScriptsTask() {
             }),
         ]
     });
-
-    const rollupOutput = await bundle.write({
-        file: `./bin/${SDK_NAME}.js`,
-        format: 'iife',
-        esModule: false,
+    await bundle.write({
+        file: `./bin/${SDK_NAME}.${'esm' === buildFormat ? 'mjs' : 'js'}`,
+        format: buildFormat,
+        // esModule: false,
         sourcemap: false,
         name: SDK_NAME,
-        globals: {'cc': 'cc'},
-    });
+        globals: {cc: 'cc'},
+    })
+    await bundle.close();
+    // const rollupOutput = await bundle.write();
     // console.log('rp', rollupOutput)
 }
 
@@ -155,13 +156,16 @@ async function cleanTask() {
 export const clean = gulp.series(cleanTask);
 
 async function buildDTSTask() {
-    const outDir = join('bin'/*, '.declarations'*/);
-    await fs.emptyDir(outDir);
+    const outDir = join('bin');
+    await emptyDir(outDir);
     return generate({
         rootDir: __dirname,
-        outDir: outDir,
-        rootModuleName: SDK_NAME,
-        nonExportedThirdLibs: ['cc'],
+        output: {
+            outDir: outDir,
+            rootModuleName: SDK_NAME,
+            usePathForRootModuleName: 'esm' === buildFormat,
+            nonExportedExternalLibs: ['cc'],
+        }
     });
 }
 

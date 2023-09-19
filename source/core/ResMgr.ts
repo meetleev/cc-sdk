@@ -40,7 +40,8 @@ class ResMgr {
      * @api public
      * @example
      * // load the tiledMapAsset (${project}/assets/resources/tiledMaps/map.tmx) from resources
-     * ccx.resMgr.loadTiledMap('map').then( (texture) => console.log(texture) ).catch( (err) => console.log(err) );
+     * import { resMgr } from 'ccx';
+     * resMgr.loadTiledMap('map').then( (texture) => console.log(texture) ).catch( (err) => console.log(err) );
      */
     loadTiledMap(paths: string, topDir?: string): Promise<TiledMapAsset> {
         topDir ??= 'tiledMaps';
@@ -55,7 +56,8 @@ class ResMgr {
      * @api public
      * @example
      * // load the audioClip (${project}/assets/resources/audios/audio.mp3) from resources
-     * ccx.resMgr.loadAudio('audio').then( (audioClip) => console.log(audioClip) ).catch( (err) => console.log(err) );
+     * import { resMgr } from 'ccx';
+     * resMgr.loadAudio('audio').then( (audioClip) => console.log(audioClip) ).catch( (err) => console.log(err) );
      */
     loadAudio(paths: string, topDir?: string): Promise<AudioClip> {
         topDir ??= 'audios';
@@ -70,7 +72,8 @@ class ResMgr {
      * @api public
      * @example
      * // load the prefab (${project}/assets/resources/prefabs/ui.prefab) from resources
-     * ccx.resMgr.loadPrefab('ui').then( (prefab) => console.log(prefab) ).catch( (err) => console.log(err) );
+     * import { resMgr } from 'ccx';
+     * resMgr.loadPrefab('ui').then( (prefab) => console.log(prefab) ).catch( (err) => console.log(err) );
      */
     loadPrefab(paths: string, topDir?: string): Promise<Prefab> {
         topDir ??= 'prefabs';
@@ -85,7 +88,8 @@ class ResMgr {
      * @api public
      * @example
      * // load the texture2D (${project}/assets/resources/textures/bg.png) from resources
-     * ccx.resMgr.loadTexture('bg').then( (texture2D) => console.log(texture2D) ).catch( (err) => console.log(err) );
+     * import { resMgr } from 'ccx';
+     * resMgr.loadTexture('bg').then( (texture2D) => console.log(texture2D) ).catch( (err) => console.log(err) );
      */
     loadTexture(paths: string, topDir?: string): Promise<Texture2D> {
         topDir ??= 'textures';
@@ -100,7 +104,8 @@ class ResMgr {
      * @api public
      * @example
      * // load the spriteFrame (${project}/assets/resources/textures/bg.png) from resources
-     * ccx.resMgr.loadSpriteFrame('bg').then( (spriteFrame) => console.log(spriteFrame) ).catch( (err) => console.log(err) );
+     * import { resMgr } from 'ccx';
+     * resMgr.loadSpriteFrame('bg').then( (spriteFrame) => console.log(spriteFrame) ).catch( (err) => console.log(err) );
      */
     loadSpriteFrame(paths: string, topDir?: string): Promise<SpriteFrame> {
         topDir ??= 'textures';
@@ -120,7 +125,8 @@ class ResMgr {
      * @api public
      * @example
      * // load the material (${project}/assets/resources/materials/bg.mat) from resources
-     * ccx.resMgr.loadMaterial('bg').then( (material) => console.log(material) ).catch( (err) => console.log(err) );
+     * import { resMgr } from 'ccx';
+     * resMgr.loadMaterial('bg').then( (material) => console.log(material) ).catch( (err) => console.log(err) );
      */
     loadMaterial(paths: string, topDir?: string): Promise<Material> {
         topDir ??= 'materials';
@@ -148,7 +154,8 @@ class ResMgr {
      * @api public
      * @example
      * // load the spine (${project}/assets/resources/spines/bg.json) from resources
-     * ccx.resMgr.loadSkeletonData('bg').then( (spine) => console.log(spine) ).catch( (err) => console.log(err) );
+     * import { resMgr } from 'ccx';
+     * resMgr.loadSkeletonData('bg').then( (spine) => console.log(spine) ).catch( (err) => console.log(err) );
      */
     loadSkeletonData(paths: string, topDir?: string): Promise<sp.SkeletonData> {
         return new Promise((resolve, reject) => {
@@ -169,7 +176,8 @@ class ResMgr {
      * @api public
      * @example
      * // load the material (${project}/assets/resources/texture2D/bg.png) from resources
-     * ccx.resMgr.load(Texture2D, 'texture2D/bg').then( (texture) => console.log(texture) ).catch( (err) => console.log(err) );
+     * import { resMgr } from 'ccx';
+     * resMgr.load(Texture2D, 'texture2D/bg').then( (texture) => console.log(texture) ).catch( (err) => console.log(err) );
      */
     load<T extends Asset>(type: { new(...args: any[]): T }, paths: string, bLogError: boolean = false): Promise<T> {
         return new Promise((resolve, reject) => {

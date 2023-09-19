@@ -154,7 +154,7 @@ class HttpMsgCenter {
                 }
             }
         } else {
-            // Log.i('sdk not login');
+            // Log.i('core not login');
         }
     }
 

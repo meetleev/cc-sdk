@@ -1,9 +1,14 @@
 export * from './Log';
-export * from './sdk/EventManager';
-// export * from './sdk/components'
-export {resMgr} from './sdk/ResMgr';
-export * from './sdk/AudioMgr';
-export * from './sdk/UIMgr';
-export * from './sdk/ObjectPoolsMgr';
+export * as FuncUtils from './core/Functions'
+export * from './core/EventManager';
+// export * from './core/components'
+export {resMgr} from './core/ResMgr';
+export * from './core/AudioMgr';
+export * from './core/UIMgr';
+export * from './core/ObjectPoolsMgr';
 
-export * from './sdk/utils';
+export * from './core/utils';
+
+export * from './core/data/index';
+
+export * from './core/planform'

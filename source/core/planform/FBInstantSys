@@ -1,0 +1,241 @@
+/*
+import Component = cc.Component;
+import {LogEventEnum} from "../LogEventEnum";
+
+const MaxReConnectTimes = 3;
+
+export class FBAdsMgr extends Component {
+    private _bRewardedVideoOK: boolean;
+    private _bInterstitialAdsOK: boolean;
+    private _iCurReConnectTimes: number;
+    private _bInterstitialAdsLoading: boolean;
+    private _bRewardedVideoLoading: boolean;
+    private _fLastRequestInterstitialAds: number;
+    private static pFBAdsMgr: FBAdsMgr;
+    private _sInterstitialAdsID: string;
+    private _fLastRequestRewardedVideoAds: number;
+    private _sRewardedVideoID: string;
+    private preloadedInterstitialAds: any;
+    private preloadedRewardedVideo: any;
+    constructor() {
+        super();
+        this.schedule(this.onUpdate, 0);
+        this._bRewardedVideoOK = false;
+        this._bInterstitialAdsOK = false;
+        this._iCurReConnectTimes = 1;
+    }
+
+    showAds(func) {
+        if (this.isLoadAdsOK()) {
+            let bFlag = false;
+            bFlag = this.showRewardedVideo((bRet) => {
+                if (bRet)
+                    func && func(true);
+                else {
+                    this.showInterstitialAds(func);
+                }
+
+            });
+
+            if (!bFlag)
+                this.showInterstitialAds(func);
+        } else {
+            func && func(false);
+        }
+    }
+
+    isLoadAdsOK() {
+        return this.isLoadInterstitialAdsOK() ||
+            this.isLoadRewardedVideoOK();
+
+    }
+
+    requestInterstitialAds(id) {
+        cc.log('requestInterstitialAds request');
+        if (!id) {
+            cc.error('requestInterstitialAds id is null');
+            return;
+        }
+        if (this._bInterstitialAdsLoading)
+            return;
+        // @ts-ignore
+        if ('undefined' !== typeof FBInstant) {
+            // @ts-ignore
+            let platform = FBInstant.getPlatform(); // 'IOS'
+            cc.log('requestInterstitialAds on ', platform);
+            if ('ANDROID' == platform || 'IOS' == platform) {
+            } else {
+                console.log('InterstitialAds not show on ', platform);
+                // return;
+            }
+        }
+        this._bInterstitialAdsLoading = true;
+        this._sInterstitialAdsID = id;
+        if (this.isSupportFBApi('getInterstitialAdAsync')) {
+            this.preloadedInterstitialAds = null;
+            // @ts-ignore
+            FBInstant.getInterstitialAdAsync(id, // Your Ad Placement Id
+            ).then((rewarded) => {
+                // Load the Ad asynchronously
+                this.preloadedInterstitialAds = rewarded;
+                return this.preloadedInterstitialAds.loadAsync();
+            }).then(() => {
+                this._iCurReConnectTimes = 1;
+                this._bInterstitialAdsLoading = false;
+                this._bInterstitialAdsOK = true;
+                cc.log('Interstitial ads preloaded')
+            }).catch((err) => {
+                this._bInterstitialAdsLoading = false;
+                this._bInterstitialAdsOK = false;
+                cc.log('Interstitial ads failed to preload: ' + err.code);
+            });
+        } else {
+            this._bInterstitialAdsLoading = true;
+            cc.log('getInterstitialAdAsync not support on platform');
+        }
+    }
+
+    showInterstitialAds(func) {
+        if (this._bInterstitialAdsOK && this.preloadedInterstitialAds) {
+            this.preloadedInterstitialAds.showAsync()
+                .then(() => {
+                    // Perform post-ad success operation
+                    // @ts-ignore
+                    FBInstant.logEvent(LogEventEnum.ShowInterstitialAds);
+                    func && func(true);
+                    this._bInterstitialAdsOK = false;
+                    this._iCurReConnectTimes = 1;
+                    cc.log('Interstitial ads watched successfully');
+                })
+                .catch((e) => {
+                    func && func(false);
+                    cc.log('showInterstitialAds', e.message);
+                });
+            return true;
+        }
+        return false;
+    }
+
+    isLoadInterstitialAdsOK() {
+        return this._bInterstitialAdsOK;
+    }
+
+    /!***************video ads******!/
+    requestRewardedVideo(id) {
+        cc.log('requestRewardedVideo request');
+        if (!id) {
+            cc.error('requestaRewardedVideo id is null');
+            return;
+        }
+        if (this._bRewardedVideoLoading)
+            return;
+        this._bRewardedVideoLoading = true;
+        this._sRewardedVideoID = id;
+        if (this.isSupportFBApi('getRewardedVideoAsync')) {
+            this.preloadedRewardedVideo = null;
+            // @ts-ignore
+            FBInstant.getRewardedVideoAsync(id, // Your Ad Placement Id
+            ).then((rewarded) => {
+                // Load the Ad asynchronously
+                this.preloadedRewardedVideo = rewarded;
+                return this.preloadedRewardedVideo.loadAsync();
+            }).then(() => {
+                this._iCurReConnectTimes = 1;
+                this._bRewardedVideoLoading = false;
+                this._bRewardedVideoOK = true;
+                cc.log('Rewarded video preloaded')
+            }).catch((err) => {
+                this._bRewardedVideoLoading = false;
+                this._bRewardedVideoOK = false;
+                cc.log('Rewarded video failed to preload: ' + err.code);
+            });
+        } else {
+            this._bRewardedVideoLoading = true;
+            cc.log('getRewardedVideoAsync not support on platform');
+        }
+    }
+
+    isSupportFBApi(apidname) {
+        // @ts-ignore
+        if ('undefined' !== typeof FBInstant) {
+            // @ts-ignore
+            let apis = FBInstant.getSupportedAPIs();
+            for (let api of (apis || [])) {
+                if (api == apidname)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    showRewardedVideo(func) {
+        if (this._bRewardedVideoOK && this.preloadedRewardedVideo) {
+            this.preloadedRewardedVideo.showAsync()
+                .then(() => {
+                    // Perform post-ad success operation
+                    // @ts-ignore
+                    FBInstant.logEvent(LogEventEnum.ShowRewardedVideo);
+                    func && func(true);
+                    this._bRewardedVideoOK = false;
+                    this._iCurReConnectTimes = 1;
+                    cc.log('Rewarded video watched successfully');
+                })
+                .catch((e) => {
+                    func && func(false);
+                    cc.log('showRewardedVideo', e.message);
+                });
+            return true;
+        }
+        return false;
+    }
+
+    isLoadRewardedVideoOK() {
+        return this._bRewardedVideoOK;
+    }
+
+    onUpdate(dt) {
+        let curTime = new Date().getTime();
+        if (!this._bRewardedVideoLoading) {
+            if (!this._bRewardedVideoOK) {
+                let reConnectSecond = (2 * this._iCurReConnectTimes - 1) * 30;
+                if (undefined == this._fLastRequestRewardedVideoAds) {
+                    this._fLastRequestRewardedVideoAds = curTime;
+                } else {
+                    if (reConnectSecond * 1000 <= curTime - this._fLastRequestRewardedVideoAds) {
+                        if (this._sRewardedVideoID) {
+                            if (MaxReConnectTimes > this._iCurReConnectTimes)
+                                this._iCurReConnectTimes++;
+                            this._fLastRequestRewardedVideoAds = curTime;
+                            this.requestRewardedVideo(this._sRewardedVideoID);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!this._bInterstitialAdsLoading) {
+            if (!this._bInterstitialAdsOK) {
+                let reConnectSecond = (2 * this._iCurReConnectTimes - 1) * 40;
+                if (undefined == this._fLastRequestInterstitialAds) {
+                    this._fLastRequestInterstitialAds = curTime;
+                } else {
+                    if (reConnectSecond * 1000 <= curTime - this._fLastRequestInterstitialAds) {
+                        if (this._sInterstitialAdsID) {
+                            if (MaxReConnectTimes > this._iCurReConnectTimes)
+                                this._iCurReConnectTimes++;
+                            this._fLastRequestInterstitialAds = curTime;
+                            this.requestInterstitialAds(this._sInterstitialAdsID);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    static getInstance() {
+        if (!FBAdsMgr.pFBAdsMgr)
+            FBAdsMgr.pFBAdsMgr = new FBAdsMgr();
+        return FBAdsMgr.pFBAdsMgr;
+    }
+}
+*/

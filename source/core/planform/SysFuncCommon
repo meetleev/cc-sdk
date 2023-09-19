@@ -22,7 +22,7 @@ function SysFuncCommon(opt) {
     } else if (cc.sys.platform === cc.sys.OPPO_GAME) {
         classSysFunc = OppoSysFunc;
     } else if (cc.sys.platform === cc.sys.VIVO_GAME) {
-        classSysFunc = VivoSysFunc;
+        classSysFunc = VivoSysfunc;
     } else if (cc.sys.platform === cc.sys.BAIDU_GAME) {
         classSysFunc = BaiduSysFunc;
     } else {

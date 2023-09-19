@@ -1,4 +1,4 @@
-import {Canvas, Director, director, instantiate, Node, Prefab, Size, UITransformComponent, view} from "cc";
+import {Canvas, Director, director, instantiate, Node, Prefab, Size, UITransform, view} from "cc";
 import {resMgr} from "./ResMgr";
 
 export type UIType = number;
@@ -58,9 +58,9 @@ export class UIMgr {
                 let pNode: Node = instantiate(prefab);
                 let parent = undefined != this.uiRoot ? this.uiRoot : this.canvas;
                 parent!.addChild(pNode);
-                let ut = pNode.getComponent(UITransformComponent)
+                let ut = pNode.getComponent(UITransform)
                 if (null == ut)
-                    ut = pNode.addComponent(UITransformComponent);
+                    ut = pNode.addComponent(UITransform);
                 ut.contentSize = view.getVisibleSize();
                 this.uiTypeNodeMap.set(uiType, pNode);
                 resolve(pNode);

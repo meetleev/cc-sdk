@@ -301,7 +301,7 @@ function CreateMoreGameNode(f) {
         let itemCls = pMoreGames.addComponent(MoreGameComponent);
         return f(itemCls);
     }
-    cc.loader.loadRes('/sdk/MoreGamesLayer', cc.Prefab, (error, prefab) => {
+    cc.loader.loadRes('/core/MoreGamesLayer', cc.Prefab, (error, prefab) => {
         if (!error) {
             let item = cc.instantiate(prefab);
             let itemCls = item.addComponent(MoreGameComponent);

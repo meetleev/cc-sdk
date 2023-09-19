@@ -1,5 +1,7 @@
-import {Node, AudioSource, AudioClip, director, sys, Director, AudioSourceComponent, Canvas} from 'cc';
+import {Node, AudioClip, director, sys, Director, AudioSourceComponent as AudioSource, Canvas} from 'cc';
 import {resMgr} from "./ResMgr";
+import {TimeSchedule, CNode} from "./components";
+import {Log} from "../Log";
 
 const MusicEnabled: string = 'ccx@MusicEnabled';
 const EffectEnabled: string = 'ccx@EffectEnabled';
@@ -76,9 +78,9 @@ export class AudioMgr {
         }
     }
 
-    private readonly _audioNodeRoot: Node;
+    private readonly _audioNodeRoot: CNode;
 
-    // private _timeSchedule: TimeSchedule;
+    private _timeSchedule: TimeSchedule;
 
     static get Instance() {
         if (undefined == AudioMgr._instance)
@@ -88,13 +90,14 @@ export class AudioMgr {
 
     private constructor() {
         director.on(Director.EVENT_BEFORE_SCENE_LAUNCH, () => {
+            Log.l('AudioMgr destroy');
             delete AudioMgr._instance;
             AudioMgr._instance = undefined;
         });
-        this._audioNodeRoot = new Node('audio');
-        GetCanvas()!.addChild(this._audioNodeRoot);
+        this._audioNodeRoot = new CNode('audio');
+        GetCanvas()!.addChild(this._audioNodeRoot.node);
 
-        // this._timeSchedule = this._audioNodeRoot.addComponent(TimeSchedule);
+        this._timeSchedule = this._audioNodeRoot.addCComponent(TimeSchedule);
 
         for (let i = 0; i < this.maxCommonAudioNums; i++) {
             this.commonAudioSources.push(this.createAudio());
@@ -144,7 +147,7 @@ export class AudioMgr {
         audioSources.forEach((o) => o.stop());
     }
 
-    pauseMusic(audioClip: string/*, bFadeOut?: boolean*/) {
+    pauseMusic(audioClip: string, bFadeOut?: boolean) {
         let audio: AudioSource;
         if (this.bgAudioSource) {
             if (this.bgAudioSource.clip?.name == audioClip) {
@@ -153,7 +156,7 @@ export class AudioMgr {
         }
         audio = this.musicAudioSourceMap.get(audioClip) as AudioSource;
         if (audio) {
-            /*if (bFadeOut) {
+            if (bFadeOut) {
                 let orgVolume = audio.volume;
                 this._timeSchedule.timeSchedule(
                     (dt: number) => {
@@ -166,7 +169,7 @@ export class AudioMgr {
                         return false;
                     }
                 );
-            } else*/
+            } else
                 audio.stop();
         }
     }
@@ -259,7 +262,7 @@ export class AudioMgr {
     }
 
     private createAudio(loop?: boolean) {
-        let audioSource = this._audioNodeRoot.addComponent(AudioSourceComponent);
+        let audioSource = this._audioNodeRoot.addComponent(AudioSource);
         loop && (audioSource.loop = loop);
         audioSource.volume = 1;
         audioSource.playOnAwake = false;
