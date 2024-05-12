@@ -1,7 +1,18 @@
 import {sys} from "cc";
-import { Log } from "../../Log";
+import {Log} from "../../Log";
 import {AndroidNativeSys} from "./android-native-sys";
-import {BaseSysFunc, IAdResult, IPlatformConf, ILogin, IPayment, IShare, IInitResult} from "./BaseSysFunc";
+import {
+    BaseSysFunc,
+    IAds,
+    IPlatformConf,
+    ILogin,
+    IPayment,
+    IShare,
+    IInitResult,
+    ILog,
+    IFloatAd,
+    IBannerAd
+} from "./BaseSysFunc";
 
 export enum SysPlatformType {
     native,
@@ -27,42 +38,58 @@ export class SysFunc {
     private constructor() {
     }
 
+    private checkInitialized() {
+        if (null == this._sysFunc) {
+            Log.e('SysFunc not initialize!');
+            return false
+        }
+        return true;
+    }
+
     showToast(msg: string, duration?: number) {
+        if (!this.checkInitialized()) return;
         this._sysFunc?.showToast(msg, duration);
     }
 
     // showModal(o: any) {}
 
-    showRewardedVideoAd(obj ?: IAdResult) {
+    showRewardedVideoAd(obj ?: IAds) {
+        if (!this.checkInitialized()) return;
         this._sysFunc?.showRewardedVideoAd(obj);
     }
 
-    showRewardedInterstitialAd(obj ?: IAdResult) {
+    showRewardedInterstitialAd(obj ?: IAds) {
+        if (!this.checkInitialized()) return;
         this._sysFunc?.showRewardedInterstitialAd(obj);
-
     }
 
-    showInterstitialAd(obj ?: IAdResult) {
+    showInterstitialAd(obj ?: IAds) {
+        if (!this.checkInitialized()) return;
         this._sysFunc?.showInterstitialAd(obj);
     }
 
-    showFloatAd() {
-        this._sysFunc?.showFloatAd();
+    showFloatAd(obj?: IFloatAd) {
+        if (!this.checkInitialized()) return;
+        this._sysFunc?.showFloatAd(obj);
     }
 
-    hideFloatAd() {
-        this._sysFunc?.hideFloatAd();
+    hideFloatAd(obj?: IFloatAd) {
+        if (!this.checkInitialized()) return;
+        this._sysFunc?.hideFloatAd(obj);
     }
 
-    showBannerAd() {
-        this._sysFunc?.showBannerAd();
+    showBannerAd(obj?: IBannerAd) {
+        if (!this.checkInitialized()) return;
+        this._sysFunc?.showBannerAd(obj);
     }
 
-    hideBannerAd() {
-        this._sysFunc?.hideBannerAd();
+    hideBannerAd(obj?: IBannerAd) {
+        if (!this.checkInitialized()) return;
+        this._sysFunc?.hideBannerAd(obj);
     }
 
     paymentWithProduct(obj: IPayment) {
+        if (!this.checkInitialized()) return;
         this._sysFunc?.paymentWithProduct(obj);
     }
 
@@ -89,26 +116,37 @@ export class SysFunc {
         });
     }
 
-    showAds(obj: IAdResult) {
+    showAds(obj: IAds) {
+        if (!this.checkInitialized()) return;
         this.showRewardedVideoAd({
-            success: () => obj?.success && obj?.success(),
-            fail: () =>
+            componentName: obj.componentName,
+            success: (pluginResult) => obj?.success && obj?.success(pluginResult),
+            fail: (pluginStatus, error) =>
                 this.showRewardedInterstitialAd({
-                    success: () => obj?.success && obj?.success(),
-                    fail: () => this.showInterstitialAd(obj)
+                    componentName: obj.componentName,
+                    success: (pluginResult) => obj?.success && obj?.success(pluginResult),
+                    fail: (pluginStatus, error) => this.showInterstitialAd(obj)
                 })
         });
     }
 
-    logEvent(eventId: string, param?: string | Map<string, string>) {
-        this._sysFunc?.logEvent(eventId, param);
+    logEvent(data: ILog) {
+        if (!this.checkInitialized()) return;
+        this._sysFunc?.logEvent(data);
     }
 
-    logIn(obj: ILogin) {
-        this._sysFunc?.logIn(obj);
+    signIn(obj: ILogin) {
+        if (!this.checkInitialized()) return;
+        this._sysFunc?.signIn(obj);
+    }
+
+    signOut(obj: ILogin) {
+        if (!this.checkInitialized()) return;
+        this._sysFunc?.signOut(obj);
     }
 
     share(obj: IShare) {
+        if (!this.checkInitialized()) return;
         this._sysFunc?.share(obj);
     }
 }

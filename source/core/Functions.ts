@@ -53,8 +53,8 @@ export function PlaySpineAct(spineActParam: SpineActParam) {
         let effSpine = node.addComponent(sp.Skeleton);
         effSpine.skeletonData = skeletonData;
         if (null == spineActParam.animName) {
-            let animsEnum = skeletonData.getAnimsEnum();
-            let keys = Object.keys(animsEnum ?? {});
+            let animEnum = skeletonData.getAnimsEnum();
+            let keys = Object.keys(animEnum ?? {});
             if (1 < keys.length)
                 spineActParam.animName = keys[1];
         }
@@ -282,7 +282,7 @@ export function DateFormat(fmt: string, date: Date) {
     return FormatDate(fmt, opt);
 }
 
-export function DHMSFormat(fmt, timestamp) {
+export function DHMSFormat(fmt: string, timestamp: number) {
     const ms = 60;
     let days = 0, hours = 0, minutes = 0, second = timestamp / 1000;
     let fDays = second / (ms * ms * 24), fHours = 0, fMinutes = 0;

@@ -21,9 +21,6 @@ import commonjs from "@rollup/plugin-commonjs";
 
 import {babel} from "@rollup/plugin-babel";
 
-import babel_preset_env from "@babel/preset-env";
-
-import babel_preset_typescript from "@babel/preset-typescript";
 
 import {nodeResolve} from "@rollup/plugin-node-resolve";
 
@@ -36,7 +33,8 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // cjs esm iife
-const buildFormat = 'iife'
+// const buildFormat = 'iife'
+const buildFormat = 'esm'
 
 const json = readJsonSync('./package.json');
 const SDK_NAME = json['sdkName'];
@@ -111,10 +109,10 @@ async function buildSDKScriptsTask() {
                 comments: false,
                 // exclude: ['node_modules/!**'],
                 // include: [/*"exports/!**!/!*.ts"*/],
-                plugins: [],
+                // plugins: ['@babel/plugin-transform-optional-chaining'],
                 presets: [
-                    [babel_preset_env.default, {loose: true,}],
-                    [babel_preset_typescript]/*['@cocos/babel-preset-cc']*/]
+                    ['@babel/preset-env', {loose: true,}],
+                    ['@babel/preset-typescript']/*['@cocos/babel-preset-cc']*/]
             }),
             rollup_plugin_terser({
                 compress: {

@@ -1,12 +1,18 @@
-import {Canvas, Director, director, instantiate, Node, Prefab, Size, UITransform, view} from "cc";
+import {Canvas, Director, director, instantiate, Node, Size, UITransform, view} from "cc";
 import {resMgr} from "./ResMgr";
 
 export type UIType = number;
+
+export interface IUIRes {
+    uiType: UIType;
+    uiResFilePath: string | Node,
+}
 
 export class UIMgr {
     private uiTypeNodeMap: Map<UIType, Node> = new Map<UIType, Node>();
     private uiTypes: Set<UIType> = new Set<UIType>();
     private static instance?: UIMgr;
+    static defaultPanelZOrder: number = 1000;
 
     static get Instance() {
         if (undefined == UIMgr.instance)
@@ -52,59 +58,66 @@ export class UIMgr {
         return this._winSize;
     }
 
-    private createUI(uiType: UIType, uiResFilePath: string): Promise<Node> {
-        return new Promise((resolve, reject) => {
-            resMgr.loadPrefab(`ui/${uiResFilePath}`).then((prefab: Prefab) => {
-                let pNode: Node = instantiate(prefab);
-                let parent = undefined != this.uiRoot ? this.uiRoot : this.canvas;
-                parent!.addChild(pNode);
-                let ut = pNode.getComponent(UITransform)
-                if (null == ut)
-                    ut = pNode.addComponent(UITransform);
-                ut.contentSize = view.getVisibleSize();
-                this.uiTypeNodeMap.set(uiType, pNode);
-                resolve(pNode);
-
-            }).catch((err: Error) => {
-                reject(err);
-            });
-        });
+    private async createUI(uiType: UIType, uiResFilePath: string): Promise<Node> {
+        let prefab = await resMgr.loadPrefab(uiResFilePath);
+        let pNode: Node = instantiate(prefab);
+        let parent = undefined != this.uiRoot ? this.uiRoot : this.canvas;
+        parent!.addChild(pNode);
+        let ut = pNode.getComponent(UITransform)
+        if (null == ut)
+            ut = pNode.addComponent(UITransform);
+        ut.contentSize = view.getVisibleSize();
+        this.uiTypeNodeMap.set(uiType, pNode);
+        return pNode;
     }
 
-    private getNode(uiType: UIType): Promise<Node> {
-        return new Promise((resolve, reject) => {
-            if (this.uiTypeNodeMap.has(uiType)) {
-                resolve(this.uiTypeNodeMap.get(uiType) as Node);
-            } else {
-                reject('no uiNode or uiNode loading!');
-            }
-        });
+    getNode(uiType: UIType): Node | undefined {
+        return this.uiTypeNodeMap.get(uiType);
     }
 
-    show(uiType: UIType, uiResFilePath?: string | Node) {
-        if (!this.uiTypes.has(uiType)) {
-            this.uiTypes.add(uiType);
-            if (undefined != uiResFilePath) {
-                if ('string' == typeof uiResFilePath)
-                    return this.createUI(uiType, uiResFilePath);
-                else {
+    async preload(uiNodes: IUIRes[]) {
+        for (let o of uiNodes) {
+            let uiType = o.uiType;
+            let uiResFilePath = o.uiResFilePath;
+            if (!this.uiTypes.has(uiType)) {
+                this.uiTypes.add(uiType);
+                let pNode: Node | undefined;
+                if ('string' == typeof uiResFilePath) {
+                    pNode = await this.createUI(uiType, uiResFilePath);
+                } else {
                     this.uiTypeNodeMap.set(uiType, uiResFilePath);
-                    return this.getNode(uiType);
+                    pNode = uiResFilePath;
                 }
+                pNode.active = false;
             }
         }
-        return this.getNode(uiType);
     }
 
-    hide(uiType: UIType): Promise<Node> {
-        return new Promise((resolve, reject) => {
-            if (this.uiTypes.has(uiType)) {
-                if (this.uiTypeNodeMap.has(uiType)) {
-                    resolve(this.uiTypeNodeMap.get(uiType) as Node);
-                } else {
-                    reject('no uiNode or uiNode loading!');
+    async show(uiType: UIType, uiResFilePath?: string | Node, zOrder?: number): Promise<Node | undefined> {
+        let pNode: Node | undefined;
+        if (!this.uiTypes.has(uiType)) {
+            if (undefined != uiResFilePath) {
+                this.uiTypes.add(uiType);
+                if ('string' == typeof uiResFilePath)
+                    pNode = await this.createUI(uiType, uiResFilePath);
+                else {
+                    this.uiTypeNodeMap.set(uiType, uiResFilePath);
+                    pNode = uiResFilePath;
                 }
-            } else reject('no uiType...');
-        });
+            }
+        } else {
+            pNode = this.getNode(uiType);
+        }
+        if (undefined != pNode) {
+            pNode.setSiblingIndex(zOrder ?? (UIMgr.defaultPanelZOrder + this.uiTypeNodeMap.size));
+            pNode.active = true;
+        }
+        return pNode;
+    }
+
+    hide(uiType: UIType) {
+        let pNode = this.getNode(uiType);
+        if (undefined != pNode)
+            pNode.active = false;
     }
 }

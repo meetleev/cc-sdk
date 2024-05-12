@@ -11,4 +11,4 @@ export * from './core/utils';
 
 export * from './core/data/index';
 
-export * from './core/planform'
+export * from './core/platform'
