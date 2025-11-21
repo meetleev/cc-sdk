@@ -12,6 +12,7 @@ import {
     TiledMapAsset
 } from "cc";
 import {FileUtils} from "./utils/FileUtils";
+import {Log} from "../Log";
 
 class ResMgr {
 
@@ -154,14 +155,13 @@ class ResMgr {
     load<T extends Asset>(url: string, bLogError: boolean = false): Promise<T> {
         const netRegex: RegExp = /^(https?)/i;
         const fileRegex: RegExp = /^(file:\/\/)/i;
-        let type: { new(...args: any[]): T }
         return new Promise((resolve, reject) => {
             let cb = (err: Error | null, assets: T) => {
                 if (!err) {
                     // this.resHash.set(assets.name, assets);
                     resolve(assets);
                 } else {
-                    !bLogError && console.log('load err ', err, `type = ${type} url = ${url}`);
+                    !bLogError && Log.e('load err ', err, `url = ${url}`);
                     reject(err);
                 }
             };
@@ -176,7 +176,7 @@ class ResMgr {
                 if (1 < fileUrls.length) {
                     fileUrl = fileUrls[0];
                 }
-                resources.load(fileUrl, type, cb);
+                resources.load(fileUrl, cb);
             }
         });
     }

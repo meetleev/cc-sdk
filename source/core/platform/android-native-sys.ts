@@ -10,11 +10,11 @@ import {
     IShare, PluginError, PluginResult, PluginShareResult,
     PluginStatus, PluginUserResult
 } from "./BaseSysFunc";
-import {EventName} from "../Constants";
-import {eventManager} from "../EventManager";
-import {DataStorage} from '../data'
-import {Log} from '../../Log'
-import {DeepCopy} from '../Functions'
+import { EventName } from "../Constants";
+import { eventManager } from "../EventManager";
+import { DataStorage } from '../data'
+import { Log } from '../../Log'
+import { DeepCopy } from '../Functions'
 
 const PAYMENT_PARMA_KEY: string = 'paymentParma';
 
@@ -86,7 +86,7 @@ export class AndroidNativeSys extends BaseSysFunc {
         pluginx.PluginHelper.showRewardedVideoAd(componentName, (pluginStatus: PluginStatus, data: string) => {
             let pluginAdResult = PluginAdResult.fromJson(JSON.parse(data));
             if (AdType.RewardedVideo == pluginAdResult.adType) {
-                Log.l('showRewardedVideoAd onAdResult statusCodes ' + pluginStatus, data);
+                Log.l('showRewardedVideoAd onAdResult pluginStatus ' + pluginStatus, data);
                 if (PluginStatus.Success == pluginStatus) {
                     obj?.success && obj?.success();
                 } else {
@@ -101,7 +101,7 @@ export class AndroidNativeSys extends BaseSysFunc {
         pluginx.PluginHelper.showRewardedInterstitialAd(componentName, (pluginStatus: PluginStatus, data: string) => {
             let pluginAdResult = PluginAdResult.fromJson(JSON.parse(data));
             if (AdType.RewardedInterstitial == pluginAdResult.adType) {
-                Log.l('showRewardedInterstitialAd onAdResult statusCodes ' + pluginStatus, data);
+                Log.l('showRewardedInterstitialAd onAdResult pluginStatus ' + pluginStatus, data);
                 if (PluginStatus.Success == pluginStatus) {
                     obj?.success && obj?.success();
                 } else {
@@ -116,7 +116,7 @@ export class AndroidNativeSys extends BaseSysFunc {
         pluginx.PluginHelper.showInterstitialAd(componentName, (pluginStatus: PluginStatus, data: string) => {
             let pluginAdResult = PluginAdResult.fromJson(JSON.parse(data));
             if (AdType.Interstitial == pluginAdResult.adType) {
-                Log.l('showInterstitialAd onAdResult statusCodes ' + pluginStatus, data);
+                Log.l('showInterstitialAd onAdResult pluginStatus ' + pluginStatus, data);
                 if (PluginStatus.Success == pluginStatus) {
                     obj?.success && obj?.success();
                 } else {
@@ -148,7 +148,7 @@ export class AndroidNativeSys extends BaseSysFunc {
     }
 
     logEvent(data: ILog) {
-        const {componentName, eventId, param} = data;
+        const { componentName, eventId, param } = data;
         Log.l('LogAnalyticsEvent Flurry/Google eventId: ' + eventId + ' param: ', param);
 
         let values: string = '';
@@ -208,7 +208,7 @@ export class AndroidNativeSys extends BaseSysFunc {
     signIn(obj: ILogin) {
         let componentName = this.getComponentName(obj.componentName);
         pluginx.PluginHelper.signIn(componentName, (pluginStatus: PluginStatus, data: string) => {
-            Log.l('onLoginResult statusCodes ' + pluginStatus, data);
+            Log.l('onLoginResult pluginStatus ' + pluginStatus, data);
             let pluginResult = PluginUserResult.fromJson(JSON.parse(data));
             if (PluginStatus.Success == pluginStatus) {
                 obj?.success && obj?.success(pluginResult);
@@ -221,7 +221,7 @@ export class AndroidNativeSys extends BaseSysFunc {
     signOut(obj: ILogin) {
         let componentName = this.getComponentName(obj.componentName);
         pluginx.PluginHelper.signOut(componentName, (pluginStatus: PluginStatus, data: string) => {
-            Log.l('onLoginResult statusCodes ' + pluginStatus, data);
+            Log.l('onLoginResult pluginStatus ' + pluginStatus, data);
             let pluginResult = PluginUserResult.fromJson(JSON.parse(data));
             if (PluginStatus.Success == pluginStatus) {
                 obj?.success && obj?.success(pluginResult);
@@ -234,7 +234,7 @@ export class AndroidNativeSys extends BaseSysFunc {
     share(obj: IShare) {
         let componentName = this.getComponentName(obj.componentName);
         pluginx.PluginHelper.share(componentName, obj.shareContent.toJson(), (pluginStatus: PluginStatus, data: string) => {
-            Log.l('onShareResult statusCodes ' + pluginStatus, data);
+            Log.l('onShareResult pluginStatus ' + pluginStatus, data);
             let pluginResult = PluginShareResult.fromJson(JSON.parse(data));
             if (PluginStatus.Success == pluginStatus) {
                 obj?.success && obj?.success(pluginResult);

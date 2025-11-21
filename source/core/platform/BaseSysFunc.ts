@@ -94,7 +94,7 @@ export class PluginShareResult extends PluginResult {
 
 export class PluginUserResult extends PluginResult {
 
-    id: string = '';
+    uid: string = '';
     gamerTitle: string = '';
     iconImageUrl: string = '';
     email: string = '';
@@ -103,8 +103,8 @@ export class PluginUserResult extends PluginResult {
     static fromJson(jsonObj: object): PluginUserResult {
         let map = new Map(Object.entries(jsonObj));
         let o = new PluginUserResult();
-        if (map.has('id')) {
-            o.id = map.get('id');
+        if (map.has('uid')) {
+            o.uid = map.get('uid');
         }
         if (map.has('gamerTitle')) {
             o.gamerTitle = map.get('gamerTitle');
